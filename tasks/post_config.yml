@@ -1,0 +1,17 @@
+---
+- name: Defining path to 'nifi.properties' config file.
+  stat: path="{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/nifi.properties"
+  register: my_path_to_nifi_properties
+
+- name: Updating 'nifi.properties' config file.
+  lineinfile:
+    destfile: "{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/nifi.properties"
+    regexp: "^{{ item.key | regex_escape() }}=.*"
+    line: "{{ item.key }}={{ item.value }}"
+    state: present
+    backup: yes
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+  with_dict: "{{ nifi_properties_j2 }}"
+  when: my_path_to_nifi_properties.stat.exists 

@@ -1,0 +1,33 @@
+---
+- name: Define 'nifi' hash as fact.
+  set_fact:
+    __nf: "{{ nifi_default | combine(nifi) }}"
+
+- name: Define facts.
+  set_fact:
+    __nf_bundle_bin: "nifi-{{ __nf.version }}-bin.{{ __nf.packaging_bin }}"
+    __nf_bundle_src: "nifi-{{ __nf.version }}-source-release.{{ __nf.packaging_src }}"
+
+- name: Define facts.
+  set_fact:
+    __nf_url_bin_installer: "{{ __nf.download.http_uri }}/nifi/{{ __nf.version }}/{{ __nf_bundle_bin }}"
+    __nf_url_src_tarball: "{{ __nf.download.http_uri }}/nifi/{{ __nf.version }}/{{ __nf_bundle_src }}"
+
+- name: Clean previous NiFi installation and generated files.
+  include: clean.yml
+
+- name: Deploy NiFi installation.
+  include: deploy_bin.yml
+  when: ( {{ __nf.action.install }} )
+
+- name: Deploy initial NiFi configuration.
+  include: deploy_config.yml
+  when: ( {{ __nf.action.install }} )
+
+- name: Post NiFi configuration.
+  include: post_config.yml
+  when: ( {{ __nf.action.install }} ) 
+
+- name: Run NiFi as systemd service.
+  include: run.yml
+  when: ( {{ __nf.action.run }} )

@@ -1,0 +1,13 @@
+---
+- name: Copying '{{ nifi_cfg.service_name }}.j2' template.
+  template:
+    src: "templates/{{ nifi_cfg.service_name }}.j2"
+    dest: "/etc/systemd/system/{{ nifi_cfg.service_name }}"
+    mode: "{{ nifi_cfg.linux_mode }}"
+
+- name: Re/Starting '{{ nifi_cfg.service_name }}' systemd.
+  service:
+    name: "{{ nifi_cfg.service_name }}"
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

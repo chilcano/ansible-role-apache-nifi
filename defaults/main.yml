@@ -1,0 +1,42 @@
+---
+nifi_default:
+  version: "1.2.0"
+  packaging_bin: "tar.gz"
+  packaging_src: "zip"
+  action:
+    clean:
+      installer: false
+      installation: false
+      dependencies: false
+    install: true
+    run: true
+  deployment:
+    mode: "http"  # https, tls_toolkit
+    tls_toolkit:
+      shared_dir_local: "/home"
+      hostname: "nftk1"
+      dir_repo: "nifi-toolkit_repo"
+  download:
+    http_uri: "http://apache.rediris.es"
+
+nifi_conf_authorizers:
+  initial_admin_identity: ""
+  nf_hostname_pattern: ""
+  nf_domain: ""
+  nf_dn_suffix: ""
+
+nifi_cfg:
+  dir_home: "/opt"
+  dir_logs: "/var/logs"
+  dir_pid: "/var/run"
+  dir_etc: "/etc"
+  linux_usr: "nifi"
+  linux_grp: "nifi"
+  linux_mode: "0750"
+  linux_root: "root"
+  log:
+    level: "INFO,DEBUG"
+  service_name: "nifi.service"
+
+### custom params nifi.properties
+nifi_properties_j2: {}

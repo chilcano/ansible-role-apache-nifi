@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<authorizers>
+    <authorizer>
+
+        <identifier>file-provider</identifier>
+        <class>org.apache.nifi.authorization.FileAuthorizer</class>
+        <property name="Authorizations File">./conf/authorizations.xml</property>
+        <property name="Users File">./conf/users.xml</property>
+
+        <!-- nifi.deployment.mode '{{ __nf.deployment.mode }}' -->
+        <property name="Initial Admin Identity">{{ nifi_conf_authorizers.initial_admin_identity }}</property>
+        <property name="Legacy Authorized Users File"></property>
+        {% set range1 = nifi_conf_authorizers.nf_hostname_pattern | regex_replace('^\\w+\\[(?P<range1>\\d+)-(?P<range2>\\d+)\\](?P<domain>.*)$', '\\g<range1>') | int -%}
+        {% set range2 = nifi_conf_authorizers.nf_hostname_pattern | regex_replace('^\\w+\\[(?P<range1>\\d+)-(?P<range2>\\d+)\\](?P<domain>.*)$', '\\g<range2>') | int -%}
+        {% if range2 > range1 >= 0 -%}
+        {% for x in range(range1, range2 + 1) -%}
+        <property name="Node Identity {{ x }}">CN=nf{{ x }}.{{ nifi_conf_authorizers.nf_domain }}, {{ nifi_conf_authorizers.nf_dn_suffix }}</property>
+        {% endfor -%}
+        {% endif %}
+
+    </authorizer>
+</authorizers>

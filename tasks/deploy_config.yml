@@ -1,0 +1,31 @@
+---
+- name: Defining shared directory path.
+  set_fact:
+    my_nifi_toolkit_shared_dir_path: "{{ __nf.deployment.tls_toolkit.shared_dir_local }}/{{ __nf.deployment.tls_toolkit.hostname }}/{{ __nf.deployment.tls_toolkit.dir_repo }}/{{ ansible_fqdn }}"
+
+- name: Copying 'keystore.jks' and 'truststore.jks' from '{{ my_nifi_toolkit_shared_dir_path }}'.
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+  with_items:
+    - { src: '{{ my_nifi_toolkit_shared_dir_path }}/keystore.jks', dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/keystore.jks' }
+    - { src: '{{ my_nifi_toolkit_shared_dir_path }}/truststore.jks', dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/truststore.jks' }
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"
+  when: __nf.deployment.mode == 'https' or __nf.deployment.mode == 'tls_toolkit'
+
+- name: Copying 'nifi.properties' files from '{{ my_nifi_toolkit_shared_dir_path }}'.
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+  with_items:
+    - { src: '{{ my_nifi_toolkit_shared_dir_path }}/nifi.properties', dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/nifi.properties' }
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"
+  when: __nf.deployment.mode == 'tls_toolkit'

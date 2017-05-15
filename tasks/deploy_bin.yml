@@ -1,0 +1,79 @@
+---
+- name: Check if NiFi binary has already been downloaded.
+  stat: path="/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
+  register: my_nifi_binary
+
+- name: Download NiFi binary installer from '{{ __nf_url_bin_installer }}'.
+  get_url:
+    url: "{{ __nf_url_bin_installer }}"
+    dest: "/home/{{ ansible_ssh_user }}/"
+  when: not my_nifi_binary.stat.exists
+
+- name: Create NiFi linux group.
+  group:
+    name: "{{ nifi_cfg.linux_grp }}"
+    state: present
+
+- name: Create NiFi linux user.
+  user:
+    name: "{{ nifi_cfg.linux_usr }}"
+    shell: /bin/bash
+    groups: "root,{{ nifi_cfg.linux_grp }}"
+    append: yes
+
+- name: Unarchive NiFi binary tarball.
+  unarchive:
+    src: "/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
+    dest: "{{ nifi_cfg.dir_home }}/"
+    remote_src: true
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+    creates: "{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/lib/bootstrap/nifi-bootstrap-{{ __nf.version }}.jar"
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"
+
+- name: Copying 'nifi-env.sh.j2' template.
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+  with_items:
+    - { src: 'templates/nifi-env.sh.j2', dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/bin/nifi-env.sh' }
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"
+
+- name: Copying 'authorizers.xml.j2' for 'nifi.deployment.mode = {{ __nf.deployment.mode }}'.
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dst }}"
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+  with_items:
+    - { src: 'templates/conf/authorizers.xml.j2', dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf/authorizers.xml' }
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"
+
+- name: Creating/overwriting permissions of NiFi configuration directories.
+  file:
+    dest: "{{ item.dst }}"
+    owner: "{{ nifi_cfg.linux_usr }}"
+    group: "{{ nifi_cfg.linux_grp }}"
+    #mode: "{{ nifi_cfg.linux_mode }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/logs' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/run' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/work' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/content_repository' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/database_repository' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/flowfile_repository' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/provenance_repository' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/state/local' }
+    - { dst: '{{ nifi_cfg.dir_home }}/nifi-{{ __nf.version }}/conf' }
+  become: true
+  become_user: "{{ nifi_cfg.linux_root }}"

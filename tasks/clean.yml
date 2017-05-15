@@ -1,0 +1,54 @@
+---
+- name: Check if '{{ nifi_cfg.service_name }}' systemd file exists.
+  stat: path="/etc/systemd/system/{{ nifi_cfg.service_name }}"
+  register: my_systemd_service_file
+  when: ( {{ __nf.action.clean.installation }} )
+
+- name: Stopping and disabling '{{ nifi_cfg.service_name }}' systemd.
+  service:
+    name: "{{ nifi_cfg.service_name }}"
+    enabled: no
+    state: stopped
+  when: ( {{ __nf.action.clean.installation }} and my_systemd_service_file.stat.exists )
+
+- name: Finding NiFi files.
+  find:
+    paths:
+      - "/etc/init.d/"
+      - "/etc/systemd/system/"
+    file_type: file
+    patterns: "^(nifi|{{ nifi_cfg.service_name }})(.*)$"
+    use_regex: true
+  register: my_files_to_cleanup
+  when: ( {{ __nf.action.clean.installation }} )
+
+- name: Finding NiFi directories.
+  find:
+    paths:
+      - "/opt"
+      - "{{ nifi_cfg['dir_logs'] }}"
+    file_type: directory
+    patterns: "^nifi\\-(.*)$"
+    use_regex: true
+  register: my_dirs_to_cleanup
+  when: ( {{ __nf.action.clean.installation }} )
+
+- name: Deleting NiFi files and directories.
+  file:
+    name: "{{ item.path }}"
+    state: absent
+  with_items: "{{ my_files_to_cleanup.files +  my_dirs_to_cleanup.files}}"
+  when: ( {{ __nf.action.clean.installation }} )
+
+- name: Deleting NiFi installer.
+  file:
+    name: "/home/{{ ansible_user }}/{{ __nf_bundle_bin }}"
+    state: absent
+  when: ( {{ __nf.action.clean.installer }} )
+
+- name: Uninstalling NiFi dependencies.
+  apt:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ my_java_packages }}"
+  when: ( {{ __nf.action.clean.installation }} and {{ __nf.action.clean.dependencies }} )
