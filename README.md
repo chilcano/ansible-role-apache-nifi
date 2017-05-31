@@ -89,6 +89,7 @@ $ sudo ansible-galaxy install geerlingguy.java
         nifi.cluster.protocol.is.secure: false
         nifi.cluster.node.address: ""
         nifi.cluster.node.protocol.port:
+      nifi_sync_dir_local: "/Users/Chilcano/1github-repo/binaries"
 
 - hosts: nf2
   become: yes
@@ -145,6 +146,7 @@ $ sudo ansible-galaxy install geerlingguy.java
         nifi.cluster.protocol.is.secure: true
         nifi.cluster.node.address: ""
         nifi.cluster.node.protocol.port: 11443
+      nifi_sync_dir_local: "/Users/Chilcano/1github-repo/binaries"
 
 - hosts: nf3
   become: yes
@@ -201,6 +203,7 @@ $ sudo ansible-galaxy install geerlingguy.java
         nifi.cluster.protocol.is.secure: true
         nifi.cluster.node.address: ""
         nifi.cluster.node.protocol.port: 11443
+      nifi_sync_dir_local: "/Users/Chilcano/1github-repo/binaries"
 ```
 
 The `vars.yml` file is:
