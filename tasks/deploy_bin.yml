@@ -1,5 +1,5 @@
 ---
-- name: Copy NiFi binary from 'local' to 'remote host (VM)'.
+- name: Copy NiFi binary from 'local' to 'remote'.
   copy:
     src: "{{ nifi_sync_dir_local }}/{{ __nf_bundle_bin }}"
     dest: "/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
@@ -16,7 +16,7 @@
     dest: "/home/{{ ansible_ssh_user }}/"
   when: not my_nifi_binary.stat.exists
 
-- name: Fetch/Sync NiFi binary from remote to local.
+- name: Fetch/Sync NiFi binary from 'remote' to 'local'.
   synchronize:
     mode: pull
     src: "/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
