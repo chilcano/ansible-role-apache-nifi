@@ -40,3 +40,6 @@ nifi_cfg:
 
 ### custom params nifi.properties
 nifi_properties_j2: {}
+
+### sync dir
+nifi_sync_dir_local: "/Users/Chilcano"

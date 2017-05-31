@@ -1,13 +1,30 @@
 ---
-- name: Check if NiFi binary has already been downloaded.
+- name: Copy NiFi binary from 'local' to 'remote host (VM)'.
+  copy:
+    src: "{{ nifi_sync_dir_local }}/{{ __nf_bundle_bin }}"
+    dest: "/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
+  register: my_binary_copied
+  ignore_errors: True
+
+- name: Check if NiFi binary has already been copied.
   stat: path="/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
   register: my_nifi_binary
 
-- name: Download NiFi binary installer from '{{ __nf_url_bin_installer }}'.
+- name: Download NiFi binary from '{{ __nf_url_bin_installer }}'.
   get_url:
     url: "{{ __nf_url_bin_installer }}"
     dest: "/home/{{ ansible_ssh_user }}/"
   when: not my_nifi_binary.stat.exists
+
+- name: Fetch/Sync NiFi binary from remote to local.
+  synchronize:
+    mode: pull
+    src: "/home/{{ ansible_ssh_user }}/{{ __nf_bundle_bin }}"
+    dest: "{{ nifi_sync_dir_local }}/{{ __nf_bundle_bin }}"
+    recursive: no
+    delete: no
+    times: yes
+  when: not my_binary_copied|succeeded
 
 - name: Create NiFi linux group.
   group:

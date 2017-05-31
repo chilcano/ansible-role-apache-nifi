@@ -228,7 +228,14 @@ nf3 ansible_host=192.168.77.7
 
 [nifis:vars]
 ansible_user=vagrant
+ansible_ssh_private_key_file="/Users/Chilcano/.vagrant.d/insecure_private_key"
 ```
+
+## Updated
+
+* Now the Role copy binary/installer from local filesystem, if it doesn't exist, then try to download from URL. Finally downloaded binary will be copied to local filesystem to be reused.
+* The `inventory` file must be update by adding `ansible_ssh_private_key_file` in order to use `synchronize` Ansible module (to sync bigger files) instead of `fetch` Ansible module.
+* The variable `nifi_sync_dir_local` was added to this Ansible Role. It is the local directory where the Ansible Role will take the binary/installer to be copied to remote.
 
 ## License
 
