@@ -1,7 +1,7 @@
 ---
 - name: Define 'nifi' hash as fact.
   set_fact:
-    __nf: "{{ nifi_default | combine(nifi) }}"
+    __nf: "{{ nifi_default | combine(nifi, recursive=True) }}"
 
 - name: Define facts.
   set_fact:
@@ -26,7 +26,7 @@
 
 - name: Post NiFi configuration.
   include: post_config.yml
-  when: ( {{ __nf.action.install }} ) 
+  when: ( {{ __nf.action.install }} )
 
 - name: Run NiFi as systemd service.
   include: run.yml
